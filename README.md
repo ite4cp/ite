@@ -1,6 +1,6 @@
 # ITE - Constructive Disjunction for Constraint Programming in SICStus Prolog
 A lightweight approach for implementing constructive disjunction in Prolog.
-The implementation has been described in the paper *Stratified Constructive Disjunction and Negation in Constraint Programming*
+The implementation has been described in the paper *Stratified Constructive Disjunction and Negation in Constraint Programming* (to appear in 30th International Conference on Tools with Artificial Intelligence - [ICTAI 2018](http://ictai2018.org/)).
 
 ## Summary
 Constraint Programming (CP) is a powerful declarative programming paradigm combining inference and search in order to find solutions to various type of constraint systems. 
