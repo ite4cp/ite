@@ -30,3 +30,20 @@ sicstus --nologo --noinfo -l test_ite.pl --goal "run_tests,halt."
 
 ## Evaluation
 A Jupyter notebook with scripts for evaluating ITE against the native clp(FD) constraints as well as the `smt` global constraint can be found in the subfolder `evaluation`.
+
+## How to Cite
+
+If ITE was useful for you, please cite the following publication
+
+```
+Gotlieb, A., Marijan, D., & Spieker, H. (2018). Stratified Constructive Disjunction and Negation in Constraint Programming. In International Conference on Tools with Artificial Intelligence.
+```
+
+```
+@inproceedings{26109,
+author = {Gotlieb, Arnaud and Marijan, Dusica and Spieker, Helge},
+booktitle = {International Conference on Tools with Artificial Intelligence},
+title = {{Stratified Constructive Disjunction and Negation in Constraint Programming}},
+year = {2018}
+}
+```
