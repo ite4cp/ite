@@ -2,6 +2,7 @@
 % test_ite.pl - Author: Arnaud Gotlieb   (2018/06/20)  - SIMULA RESEARCH LABORATORY
 %
 % Test file for testing ITE
+% ?- run_tests.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- use_module(library(plunit)).
 :- ensure_loaded([ite]).
@@ -63,6 +64,15 @@ test(cd12):-
 test(cd13) :-
         A in 1..10, B in 1..10, (A+7 #=< B) #\/ (#\(B+7 #> A)), (A #> 1 #/\B #<9) #\/ (A #> 2 #/\ A#<10),
         fd_dom(A, 1..10), fd_dom(B, 1..10). 
+test(cd14):-
+        A in 1..10000, B in 1..10000, C in 9000..10000, (A + C #< B) cd (B+C #<A),
+        fd_dom(A, (1..999)\/(9002..10000)), fd_dom(B, (1..999)\/(9002..10000)), fd_dom(C, 9000..9998). 
+test(cd15):-
+        X in -10000000..10000000, Y in -10000000..10000000, X #= Y, (X #= 1)  cd (Y #= 2),
+        fd_dom(X, 1..2), fd_dom(Y, 1..2).
+test(cd16, [fail]):-
+        (X #= 0) cd (X #= 1000) cd (X #= 100000), (X #= 10) cd (X #= 10000) cd (X #= 1000000). 
+
 
 test(cxd1, [true(X =:= 0), true(Z =:= 0)]):-
         X in 0..3, Y in 4..5, Z in -2..0, (X #= Y) cxd (X #= Z),
@@ -74,27 +84,26 @@ test(cxd3) :-
         fd_dom(X, 0..100), fd_dom(Y, (-10000.. -121)\/(0..8)\/(15..30)).
 
 test(cns1) :-
-        init_env(ENV, 2), X in 0..10, cn(cd(X #= 0, X #= 4, ENV) #\/ cd(X #= 1, X #= 7, ENV), ENV),
+        init_env(ENV, [kflag(2)]), X in 0..10, cn(cd(X #= 0, X #= 4, ENV) #\/ cd(X #= 1, X #= 7, ENV), ENV),
         fd_dom(X, (2..3)\/(5..6)\/(8..10)).
 
 
 
 test(cds1) :-
-        init_env(ENV,7), cd(cd(X#=0, Y #= 4, ENV), X #= 9, ENV), cd(cd(Y #= 9, Y #= 6, ENV),Y #= 7, ENV), end_env(ENV),
+        init_env(ENV,[kflag(7)]), cd(cd(X#=0, Y #= 4, ENV), X #= 9, ENV), cd(cd(Y #= 9, Y #= 6, ENV),Y #= 7, ENV), end_env(ENV),
         fd_dom(X, {0}\/{9}), fd_dom(Y, (6..7)\/{9}).
 test(cds2):-
-        init_env(ENV,6),cd(cd(X#=0, X #= 4, ENV), X #= 9, ENV),cd(cd(Y #= 9, Y #= 6, ENV),Y #= 7, ENV), end_env(ENV),
+        init_env(ENV,[kflag(6)]),cd(cd(X#=0, X #= 4, ENV), X #= 9, ENV),cd(cd(Y #= 9, Y #= 6, ENV),Y #= 7, ENV), end_env(ENV),
         fd_dom(X, {0}\/{4}\/{9}), fd_dom(Y, (6..7)\/{9}).
 test(cds3):-
-        init_env(ENV,3),cd(cd(X#=0, Y #= 4, ENV), X #= 9, ENV),cd(cd(Y #= 9, X #= 6, ENV),Y #= 7, ENV), end_env(ENV),
+        init_env(ENV,[kflag(3)]),cd(cd(X#=0, Y #= 4, ENV), X #= 9, ENV),cd(cd(Y #= 9, X #= 6, ENV),Y #= 7, ENV), end_env(ENV),
         fd_dom(X, {0}\/{6}\/{9}),fd_dom(Y, {4}\/{7}\/{9}).
 test(cds4, [fail]):-
-        init_env(ENV,1), cd(X#=0, X #= 4, ENV), cd(X #= 9, X#=4, ENV), cd(X #= 9, X #= 0, ENV),end_env(ENV).
-test(cds5) :-
-        init_env(ENV,0), cd(X#=0, X #= 4, ENV), cd(X #= 9, X#=4, ENV), cd(X #= 9, X #= 0, ENV),end_env(ENV),
-        fd_dom(X, inf..sup).
+        init_env(ENV,[kflag(1)]), cd(X#=0, X #= 4, ENV), cd(X #= 9, X#=4, ENV), cd(X #= 9, X #= 0, ENV),end_env(ENV).
+test(cds5, [true(X=:=4)]) :-
+        init_env(ENV,[kflag(1)]), cd(X#=0, X #= 4, ENV), cd(X #= 9, X#=4, ENV), cd(X #= 9, X #= 4, ENV),end_env(ENV).
 test(cds6, [true(X =:= 4)]):-
-        init_env(ENV,1), cd(X#=0, X #= 4, ENV), cd(X #= 9, X#=4, ENV), cd(X #= 4, X #= 0, ENV),end_env(ENV).
+        init_env(ENV,[kflag(1)]), cd(X#=0, X #= 4, ENV), cd(X #= 9, X#=4, ENV), cd(X #= 4, X #= 0, ENV),end_env(ENV).
 
 
 
@@ -119,30 +128,30 @@ test(ci1):-
         init_env(_ENV), ci(X #=< 7, Y #< 5, _ENV), ci(Y #>= 5, X #= 4, _ENV), X #< Y, end_env(_ENV),
         fd_dom(X, inf..3),
         fd_dom(Y, inf..4).
-test(ci2):-
-        init_env(_ENV,1), ci(X #=< 7, Y #< 5, _ENV), ci(Y #>= 5, X #= 4, _ENV), X #< Y, end_env(_ENV),
-        fd_dom(X, inf..sup),
-        fd_dom(Y, inf..sup).
 
+test(opts1):-
+        init_env(E, []), init_env(E, [dmin(0), dmax(100), kflag(10)]), init_env(E, [reveil(3), kflag(0), dmax(99)]), cd(X#=1, X#=6, E),
+        end_env(E),end_env(E),
+        fd_dom(X, inf..99).
 
 test(complex1):-
         cd(cd(X#=0, Y #= 4), X #= 9), cd(cd(Y #= 9, Y #= 6),Y #= 7),
         fd_dom(X, {0}\/{9}), fd_dom(Y, (6..7)\/{9}).
 
 test(complex2):-
-        init_env(ENV,7), cd(cd(X#=0, Y #= 4, ENV), X #= 9, ENV), cd(cd(Y #= 9, Y #= 6, ENV),Y #= 7, ENV), end_env(ENV),
+        init_env(ENV,[kflag(7)]), cd(cd(X#=0, Y #= 4, ENV), X #= 9, ENV), cd(cd(Y #= 9, Y #= 6, ENV),Y #= 7, ENV), end_env(ENV),
         fd_dom(X, {0}\/{9}), fd_dom(Y, (6..7)\/{9}).
 
 test(complex3) :-  %smt(Y in 30..40 #\/ Y #=X #\/ X*2 #=Y), X in 0..10.   --> Y in inf..sup, X in 0..10 
-        init_env(ENV, 5), cd(cd(Y in 30..40, Y#=X, ENV), X*2 #=Y, ENV), X in 0..10,end_env(ENV),
+        init_env(ENV, [kflag(5)]), cd(cd(Y in 30..40, Y#=X, ENV), X*2 #=Y, ENV), X in 0..10,end_env(ENV),
         fd_dom(X, 0..10), fd_dom(Y, (0..20)\/(30..40)).
 
 test(complex4):- %smt(Y in 1..100 #\/ Y#=X #\/ X #=Y), X in 0..10.   --> Y in inf..sup, X in 0..10
-        init_env(ENV, 5), cd(cd(Y in 1..100, Y#=X, ENV), X #=Y, ENV), X in 0..10, end_env(ENV),
+        init_env(ENV, [kflag(5)]), cd(cd(Y in 1..100, Y#=X, ENV), X #=Y, ENV), X in 0..10, end_env(ENV),
         fd_dom(X, 0..10), fd_dom(Y, 0..100).
 
 test(complex5) :-   %smt(X #= 1 #\/ X#=3 #\/ X*X #=100). --> no
-        init_env(ENV, 5), cd(cd(X #= 1, X #= 3, ENV), X*X #= 100, ENV),end_env(ENV),
+        init_env(ENV, [kflag(5)]), cd(cd(X #= 1, X #= 3, ENV), X*X #= 100, ENV),end_env(ENV),
         fd_dom(X,{-10}\/{1}\/{3}\/{10}).
 
 test(complex6) :-
@@ -151,8 +160,10 @@ test(complex6) :-
         
         
 test(complex7, [true(Y=:=3), true(Z=:=3)]):-   % ultrametric Moore and Prosser JAIR 32 (2008) 901-938
-        init_env(ENV, 5), cd(cd(X #> Y #/\ Y #= Z, Y #> X #/\ X #= Z, ENV), cd(Z #> X #/\ X #=Y, X #= Y #/\ Y #= Z, ENV), ENV), X in 5..100, Y in 3..100, Z in -100..3, end_env(ENV),
+        init_env(ENV, [kflag(5)]), cd(cd(X #> Y #/\ Y #= Z, Y #> X #/\ X #= Z, ENV), cd(Z #> X #/\ X #=Y, X #= Y #/\ Y #= Z, ENV), ENV), X in 5..100, Y in 3..100, Z in -100..3, end_env(ENV),
         fd_dom(X, 5..100).
 
-        
+test(complex8, [fail]) :-
+          X in 1..10000, Y in 1..10000, Z in 1..10000, C in 4..7,(X-Y #= C) cd (Y-X #= C),  (X-Z #= C) cd (Z-X #= C),  (Z-Y #= C) cd (Y-Z #= C).
+
 :-end_tests(ite).
