@@ -3,11 +3,12 @@
 % Vers. 1.0: (2012/07/01) Stratified reasoning - No memoization
 % Vers. 1.1: (2015/09/23) Adding cxd/2 constructive exclusive disjunction
 % Vers. 1.2: (2018/06/20) Bugs corrections, 42 unit tests in test_ite.pl
-% Vers. 1.3: (2018/07/??) Options in init_env revisited - Implemented with atts
+% Vers. 1.3: (2018/07/01) Options in init_env revisited - Implemented with atts
+% Vers. 1.4: (2019/06/03) Code clean-up
 %
 % An implementation of constructive disjunction (and stratified CD), constructive negation,
 % constructive conditional, constructive implication  for clpfd programs. 
-% NOTE : Tested with SICStus Prolog 4.4.1 on x86_64-win32-nt-4
+% NOTE : Tested with SICStus Prolog 4.4.5 on x86_64-win32-nt-4
 %
 % Syntax on which cd/2, cd/3, cxd/2, cn/1, cn/2, ite/4, ci/3, can be applied
 % RelOp 	  ::=   #= | #\= | #< | #=< | #> | #>=       % i.e., "simple" constraints 
@@ -29,7 +30,7 @@
 :-use_module(library(clpfd)).
 :-use_module(library(terms)).
 :-use_module(library(ordsets)).
-:-use_module(library(random)).
+%:-use_module(library(random)).
 :-use_module(library(atts)).
 
 :- op(900,    fy, cn).
@@ -42,50 +43,12 @@
 
 :- attribute kflag/1, reveil/1, dmin/1, dmax/1, lvar/1, susp/1.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% cn/1   constructive negation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-cn(C) :-
-         term_variables(C, L),
-         add_dom(minmax, L, DOM),
-         clpfd:fd_global(cn_ctr(C,L),state,DOM).  
-
-clpfd:dispatch_global(cn_ctr(C,L),state, state, Actions) :-
-        cn_solve(C,L, Actions).
-
-% no variable in the query (negation as failure = logical negation
-cn_solve(true,  _L, Actions) :-  !, Actions = [fail].
-cn_solve(1,     _L, Actions) :-  !, Actions = [fail].
-cn_solve(false, _L, Actions) :-  !, Actions = [exit].
-cn_solve(0,     _L, Actions) :-  !, Actions = [exit].
-
-cn_solve(C,  [], Actions) :-  call(C), !, Actions = [fail].   % no variable (L == []) - Negation as failure is correct
-cn_solve(_C, [], Actions) :-           !, Actions = [exit].
-
-cn_solve(C, _L, Actions) :-
-        gen_ctr_neg(C, NC),    % OK to fail if C is not simple!
-        !,
-        Actions = [exit, call(user:NC)].
-
-cn_solve(in(V, R),     _L, Actions)  :-      !, Actions = [exit, V in \ R].
-cn_solve(cn(C),        _L, Actions)  :-       !, Actions = [exit, call(user:C)].
-cn_solve(cd(C1,C2),    _L, Actions)  :-   !, Actions = [exit, call(user:cn(C1)),call(user:cn(C2))].
-cn_solve('#\\'(C),     _L, Actions)  :-      !, Actions = [exit, call(user:C)].
-cn_solve('#\\'(C1,C2), _L, Actions)  :-   !, Actions = [exit, call('#<=>'(C1,C2))].  
-cn_solve('#/\\'(C1,C2),_L, Actions)  :-  !, Actions = [exit, call(user:cd(user:cn(C1),user:cn(C2)))].
-cn_solve('#\\/'(C1,C2),_L, Actions)  :-  !, Actions = [exit, call(user:cn(C1)),call(user:cn(C2))].
-cn_solve('#=>'(C1,C2), _L, Actions)  :-  !, Actions = [exit, call(user:C1),call(user:cn(C2))].
-cn_solve('#<=>'(C1,C2), _L, Actions) :- !, Actions = [exit, call('#\\'(C1,C2))].
-
-cn_solve(_C, _L, Actions) :-  !, Actions = [].        
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% cd/2   constructive disjunction
+% cd/2   constructive disjunction (without stratified reasoning)
 %
 % | ?-  X in 0..4, Y in 0..4, X #>= Y, X - Y #>= 4 cd Y - X #>= 4.
-%   ?-  init_env(E, [kflag(1), reveil(3)]), X in 0..4, Y in 0..4, cd(X - Y #>= 4, Y - X #>= 4,E), X #>= Y, end_env(E).
-%
-% X = 4,Y = 0 ? yes
+%   ?-  init_env(E, [kflag(1)]), X in 0..4, Y in 0..4, cd(X - Y #>= 4, Y - X #>= 4,E), X #>= Y, end_env(E).
+% X = 4,Y = 0
 %
 % | ?- X in 0..4, Y in 0..4, X #>= Y, X - Y #>= 4 #\/ Y - X #>= 4.
 % X in 0..4, Y in 0..4
@@ -94,32 +57,30 @@ cd(C1, C2) :-
          term_variables(C1, L1L), list_to_ord_set(L1L, L1),
          term_variables(C2, L2L), list_to_ord_set(L2L, L2),
          ord_union(L1, L2, LU),
-%         ord_intersection(L1, L2,  LI),
+%         ord_intersection(L1, L2,  LI),   % AG 29/5/2019 No usage of the intersection - Could be useful for boosting the filtering.
          add_dom(minmax, LU, DOM),
-         clpfd:fd_global(cd_ctr(LU, LI, C1, C2),state, DOM).  
+         clpfd:fd_global(cd_ctr(LU, C1, C2),state, DOM).  
 
-clpfd:dispatch_global(cd_ctr(LU, LI, C1, C2),state, state, Actions) :-
-        cd_solve(LU, LI, C1, C2, Actions).
+clpfd:dispatch_global(cd_ctr(LU, C1, C2),state, state, Actions) :-
+        cd_solve(LU, C1, C2, Actions).
 
 % no variable in the query
-cd_solve([], _LI, C1, _C2, Actions) :-  call(C1), !, Actions = [exit].
-cd_solve([], _LI, _C1, C2, Actions) :-  call(C2), !, Actions = [exit].
-                                %cd_solve([], _LI, _C1, _C2, Actions) :-                !, Actions = [fail].     % AG 8/3/2019 Dead Code
-cd_solve(LU, _LI, C1, C2, Actions) :-   
+cd_solve([], C1, _C2, Actions) :-  call(C1), !, Actions = [exit].
+cd_solve([], _C1, C2, Actions) :-  call(C2), !, Actions = [exit].
+                                %cd_solve([], _C1, _C2, Actions) :-                !, Actions = [fail].     % AG 8/3/2019 Dead Code
+cd_solve(LU, C1, C2, Actions) :-   
         \+( (call(C1), assert_bounds(LU)) ),
         !,            % C1 = fail
         Actions = [exit, call(user:C2)].
 
-cd_solve(LU, _LI, C1, C2, Actions) :-   
+cd_solve(LU, C1, C2, Actions) :-   
         \+( (call(C2), assert_bounds(LU)) ),
         !,            % C2 = fail
         (retract(inb(_)) -> true),
         Actions = [exit, call(user:C1)].
 
-cd_solve(LU, _LI, _C1, _C2, Actions) :-
+cd_solve(LU, _C1, _C2, Actions) :-
         union_bounds(LU, Actions).  % suspend
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % cxd/2   constructive exclusive disjunction
@@ -147,6 +108,44 @@ cxd_solve(C1, C2, L, Actions) :-
 
 cxd_solve(_C1, _C2, L, Actions) :-
         union_bounds(L, Actions).  % suspend
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% cn/1   constructive negation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+cn(C) :-
+         term_variables(C, L),
+         add_dom(minmax, L, DOM),
+         clpfd:fd_global(cn_ctr(C,L),state,DOM).  
+
+clpfd:dispatch_global(cn_ctr(C,L),state, state, Actions) :-
+        cn_solve(C,L, Actions).
+
+% no variable in the query (negation as failure = logical negation
+cn_solve(true,  _L, Actions) :-  !, Actions = [fail].
+cn_solve(1,     _L, Actions) :-    !, Actions = [fail].
+cn_solve(false, _L, Actions) :-  !, Actions = [exit].
+cn_solve(0,     _L, Actions) :-    !, Actions = [exit].
+
+cn_solve(C,  [], Actions) :-  call(C), !, Actions = [fail].   % no variable (L == []) - Negation as failure is correct
+cn_solve(_C, [], Actions) :-              !, Actions = [exit].
+
+cn_solve(C, _L, Actions) :-
+        gen_ctr_neg(C, NC),    % OK to fail if C is not simple!
+        !,
+        Actions = [exit, call(user:NC)].
+
+cn_solve(in(V, R),     _L, Actions)  :-      !, Actions = [exit, V in \ R].
+cn_solve(cn(C),        _L, Actions)  :-       !, Actions = [exit, call(user:C)].
+cn_solve(cd(C1,C2),    _L, Actions)  :-   !, Actions = [exit, call(user:cn(C1)),call(user:cn(C2))].
+cn_solve('#\\'(C),     _L, Actions)  :-      !, Actions = [exit, call(user:C)].
+cn_solve('#\\'(C1,C2), _L, Actions)  :-   !, Actions = [exit, call('#<=>'(C1,C2))].  
+cn_solve('#/\\'(C1,C2),_L, Actions)  :-  !, Actions = [exit, call(user:cd(user:cn(C1),user:cn(C2)))].
+cn_solve('#\\/'(C1,C2),_L, Actions)  :-  !, Actions = [exit, call(user:cn(C1)),call(user:cn(C2))].
+cn_solve('#=>'(C1,C2), _L, Actions)  :-  !, Actions = [exit, call(user:C1),call(user:cn(C2))].
+cn_solve('#<=>'(C1,C2), _L, Actions) :- !, Actions = [exit, call('#\\'(C1,C2))].
+
+cn_solve(_C, _L, Actions) :-  !, Actions = [].        
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONSTRAINTS WITH STRATIFIED REASONING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -545,3 +544,6 @@ get_dmax(ENV, Max) :-
         get_atts(ENV, [dmax(Max)]).
 get_susp(ENV, Susp) :-
         get_atts(ENV, [susp(Susp)]).
+
+
+
