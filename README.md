@@ -1,6 +1,6 @@
 # ITE - Constructive Disjunction for Constraint Programming in SICStus Prolog
 A lightweight approach for implementing constructive disjunction in Prolog.
-The implementation has been described in the paper *Stratified Constructive Disjunction and Negation in Constraint Programming* (to appear in 30th International Conference on Tools with Artificial Intelligence - [ICTAI 2018](http://ictai2018.org/)).
+The implementation has been described in the paper *Stratified Constructive Disjunction and Negation in Constraint Programming* (published in the Proc. of the 30th Int. Conf. on Tools with Artificial Intelligence - [ICTAI 2018](http://ictai2018.org/)).
 
 ## Summary
 Constraint Programming (CP) is a powerful declarative programming paradigm combining inference and search in order to find solutions to various type of constraint systems. 
@@ -36,14 +36,15 @@ A Jupyter notebook with scripts for evaluating ITE against the native clp(FD) co
 If ITE was useful for you, please cite the following publication
 
 ```
-Gotlieb, A., Marijan, D., & Spieker, H. (2018). Stratified Constructive Disjunction and Negation in Constraint Programming. In International Conference on Tools with Artificial Intelligence.
+Gotlieb, A., Marijan, D., & Spieker, H. (2018). Stratified Constructive Disjunction and Negation in Constraint Programming. In the Proc. of the 30th Int. Conf. on Tools with Artificial Intelligence (ICTAI'19), Volos, Greece, Nov. 2018.
 ```
 
 ```
 @inproceedings{26109,
 author = {Gotlieb, Arnaud and Marijan, Dusica and Spieker, Helge},
-booktitle = {International Conference on Tools with Artificial Intelligence},
+booktitle = {Proc. of the 30th Int. Conf. on Tools with Artificial Intelligence (ICTAI'18), Volos, Greece},
 title = {{Stratified Constructive Disjunction and Negation in Constraint Programming}},
+month = {Nov.},
 year = {2018}
 }
 ```
