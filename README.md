@@ -1,6 +1,6 @@
 # ITE - Constructive Disjunction for Constraint Programming in SICStus Prolog
 A lightweight approach for implementing constructive disjunction in Prolog.
-The implementation has been described in the paper *Stratified Constructive Disjunction and Negation in Constraint Programming* (published in the Proc. of the 30th Int. Conf. on Tools with Artificial Intelligence - [ICTAI 2018](http://ictai2018.org/)). A preprint of the paper is [available on arXiv](https://arxiv.org/abs/1811.03906).
+The implementation has been described in the paper *ITE: A Lightweight Implementation of Stratified Reasoning for Constructive Logical Operators* (published in the [International Journal on Artificial Intelligence Tools](https://doi.org/10.1142/S0218213020600064)). A preprint of the paper is [available on arXiv](https://arxiv.org/abs/1811.03906).
 
 ## Summary
 Constraint Programming (CP) is a powerful declarative programming paradigm combining inference and search in order to find solutions to various type of constraint systems. 
@@ -33,18 +33,36 @@ A Jupyter notebook with scripts for evaluating ITE against the native clp(FD) co
 
 ## How to Cite
 
-If ITE was useful for you, please cite the following publication
+If ITE was useful for you, please cite one of the following publications
 
 ```
-Gotlieb, A., Marijan, D., & Spieker, H. (2018). Stratified Constructive Disjunction and Negation in Constraint Programming. In the Proc. of the 30th Int. Conf. on Tools with Artificial Intelligence (ICTAI'19), Volos, Greece, Nov. 2018.
+Gotlieb, A., Marijan, D., & Spieker, H. (2020). ITE: A Lightweight Implementation of Stratified Reasoning for Constructive Logical Operators. International Journal on Artificial Intelligence Tools, 29(03n04), 2060006. https://doi.org/10.1142/s0218213020600064 
+
+Gotlieb, A., Marijan, D., & Spieker, H. (2018). Stratified Constructive Disjunction and Negation in Constraint Programming. 2018 IEEE 30th International Conference on Tools with Artificial Intelligence (ICTAI). 2018 IEEE 30th International Conference on Tools with Artificial Intelligence (ICTAI). https://doi.org/10.1109/ictai.2018.00026 
 ```
 
 ```
-@inproceedings{26109,
-author = {Gotlieb, Arnaud and Marijan, Dusica and Spieker, Helge},
-booktitle = {Proc. of the 30th Int. Conf. on Tools with Artificial Intelligence (ICTAI'18), Volos, Greece},
-title = {{Stratified Constructive Disjunction and Negation in Constraint Programming}},
-month = {Nov.},
-year = {2018}
+@article{Gotlieb2020,
+  doi = {10.1142/s0218213020600064},
+  url = {https://doi.org/10.1142/s0218213020600064},
+  year = {2020},
+  publisher = {World Scientific Pub Co Pte Lt},
+  volume = {29},
+  number = {03n04},
+  pages = {2060006},
+  author = {Arnaud Gotlieb and Dusica Marijan and Helge Spieker},
+  title = {{ITE}: A Lightweight Implementation of Stratified Reasoning for Constructive Logical Operators},
+  journal = {International Journal on Artificial Intelligence Tools}
+}
+
+@inproceedings{Gotlieb2018,
+  doi = {10.1109/ictai.2018.00026},
+  url = {https://doi.org/10.1109/ictai.2018.00026},
+  year = {2018},
+  month = nov,
+  publisher = {{IEEE}},
+  author = {Arnaud Gotlieb and Dusica Marijan and Helge Spieker},
+  title = {Stratified Constructive Disjunction and Negation in Constraint Programming},
+  booktitle = {2018 {IEEE} 30th International Conference on Tools with Artificial Intelligence ({ICTAI})}
 }
 ```
